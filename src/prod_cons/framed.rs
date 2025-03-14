@@ -9,7 +9,10 @@ use crate::{
     traits::{
         bbqhdl::BbqHandle,
         coordination::Coord,
-        notifier::{AsyncNotifier, Notifier},
+        notifier::{
+            typed::{AsyncNotifierTyped, ConstrFnMut, ConstrFut, TypedWrapper},
+            AsyncNotifier, Notifier,
+        },
         storage::Storage,
     },
 };
@@ -134,6 +137,22 @@ where
     }
 }
 
+impl<Q, S, C, N, H> TypedWrapper<FramedProducer<Q, S, C, N, H>>
+where
+    S: Storage,
+    C: Coord,
+    N: AsyncNotifierTyped,
+    Q: BbqHandle<S, C, N>,
+    H: LenHeader,
+{
+    pub fn wait_grant(
+        &self,
+        sz: H,
+    ) -> <N as ConstrFut>::NotFull<impl ConstrFnMut<Out = FramedGrantW<Q, S, C, N, H>>> {
+        self.bbq.not.wait_for_not_full(move || self.grant(sz).ok())
+    }
+}
+
 pub struct FramedConsumer<Q, S, C, N, H = u16>
 where
     S: Storage,
@@ -207,6 +226,21 @@ where
 {
     pub async fn wait_read(&self) -> FramedGrantR<Q, S, C, N, H> {
         self.bbq.not.wait_for_not_empty(|| self.read().ok()).await
+    }
+}
+
+impl<Q, S, C, N, H> TypedWrapper<FramedConsumer<Q, S, C, N, H>>
+where
+    S: Storage,
+    C: Coord,
+    N: AsyncNotifierTyped,
+    Q: BbqHandle<S, C, N>,
+    H: LenHeader,
+{
+    pub fn wait_read(
+        &self,
+    ) -> <N as ConstrFut>::NotEmpty<impl ConstrFnMut<Out = FramedGrantR<Q, S, C, N, H>>> {
+        self.bbq.not.wait_for_not_empty(move || self.read().ok())
     }
 }
 

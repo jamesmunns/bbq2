@@ -9,7 +9,10 @@ use crate::{
     traits::{
         bbqhdl::BbqHandle,
         coordination::Coord,
-        notifier::{AsyncNotifier, Notifier},
+        notifier::{
+            typed::{AsyncNotifierTyped, ConstrFnMut, ConstrFut, TypedWrapper},
+            AsyncNotifier, Notifier,
+        },
         storage::Storage,
     },
 };
@@ -118,6 +121,32 @@ where
     }
 }
 
+impl<Q, S, C, N> TypedWrapper<StreamProducer<Q, S, C, N>>
+where
+    S: Storage,
+    C: Coord,
+    N: AsyncNotifierTyped,
+    Q: BbqHandle<S, C, N>,
+{
+    pub fn wait_grant_max_remaining(
+        &self,
+        max: usize,
+    ) -> <N as ConstrFut>::NotFull<impl ConstrFnMut<Out = StreamGrantW<Q, S, C, N>> + '_> {
+        self.bbq
+            .not
+            .wait_for_not_full(move || self.grant_max_remaining(max).ok())
+    }
+
+    pub fn wait_grant_exact(
+        &self,
+        sz: usize,
+    ) -> <N as ConstrFut>::NotFull<impl ConstrFnMut<Out = StreamGrantW<Q, S, C, N>> + '_> {
+        self.bbq
+            .not
+            .wait_for_not_full(move || self.grant_exact(sz).ok())
+    }
+}
+
 pub struct StreamConsumer<Q, S, C, N>
 where
     S: Storage,
@@ -161,6 +190,20 @@ where
 {
     pub async fn wait_read(&self) -> StreamGrantR<Q, S, C, N> {
         self.bbq.not.wait_for_not_empty(|| self.read().ok()).await
+    }
+}
+
+impl<Q, S, C, N> TypedWrapper<StreamConsumer<Q, S, C, N>>
+where
+    S: Storage,
+    C: Coord,
+    N: AsyncNotifierTyped,
+    Q: BbqHandle<S, C, N>,
+{
+    pub fn wait_read(
+        &self,
+    ) -> <N as ConstrFut>::NotEmpty<impl ConstrFnMut<Out = StreamGrantR<Q, S, C, N>> + '_> {
+        self.bbq.not.wait_for_not_empty(move || self.read().ok())
     }
 }
 
