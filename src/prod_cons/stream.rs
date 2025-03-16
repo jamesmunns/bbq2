@@ -10,7 +10,7 @@ use crate::{
         bbqhdl::BbqHandle,
         coordination::Coord,
         notifier::{
-            typed::{AsyncNotifierTyped, ConstrFnMut, ConstrFut, TypedWrapper},
+            typed::{AsyncNotifierTyped, ConstrFnMut, ConstrFut, Typed, TypedWrapper},
             AsyncNotifier, Notifier,
         },
         storage::Storage,
@@ -121,6 +121,15 @@ where
     }
 }
 
+impl<S, C, N, Q> Typed for StreamProducer<Q, S, C, N>
+where
+    S: Storage,
+    C: Coord,
+    N: Notifier,
+    Q: BbqHandle<S, C, N>,
+{
+}
+
 impl<Q, S, C, N> TypedWrapper<StreamProducer<Q, S, C, N>>
 where
     S: Storage,
@@ -191,6 +200,15 @@ where
     pub async fn wait_read(&self) -> StreamGrantR<Q, S, C, N> {
         self.bbq.not.wait_for_not_empty(|| self.read().ok()).await
     }
+}
+
+impl<S, C, N, Q> Typed for StreamConsumer<Q, S, C, N>
+where
+    S: Storage,
+    C: Coord,
+    N: Notifier,
+    Q: BbqHandle<S, C, N>,
+{
 }
 
 impl<Q, S, C, N> TypedWrapper<StreamConsumer<Q, S, C, N>>

@@ -10,7 +10,7 @@ use crate::{
         bbqhdl::BbqHandle,
         coordination::Coord,
         notifier::{
-            typed::{AsyncNotifierTyped, ConstrFnMut, ConstrFut, TypedWrapper},
+            typed::{AsyncNotifierTyped, ConstrFnMut, ConstrFut, Typed, TypedWrapper},
             AsyncNotifier, Notifier,
         },
         storage::Storage,
@@ -137,6 +137,15 @@ where
     }
 }
 
+impl<Q, S, C, N> Typed for FramedProducer<Q, S, C, N>
+where
+    S: Storage,
+    C: Coord,
+    N: Notifier,
+    Q: BbqHandle<S, C, N>,
+{
+}
+
 impl<Q, S, C, N, H> TypedWrapper<FramedProducer<Q, S, C, N, H>>
 where
     S: Storage,
@@ -227,6 +236,16 @@ where
     pub async fn wait_read(&self) -> FramedGrantR<Q, S, C, N, H> {
         self.bbq.not.wait_for_not_empty(|| self.read().ok()).await
     }
+}
+
+impl<Q, S, C, N, H> Typed for FramedConsumer<Q, S, C, N, H>
+where
+    S: Storage,
+    C: Coord,
+    N: AsyncNotifier,
+    Q: BbqHandle<S, C, N>,
+    H: LenHeader,
+{
 }
 
 impl<Q, S, C, N, H> TypedWrapper<FramedConsumer<Q, S, C, N, H>>

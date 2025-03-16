@@ -28,8 +28,6 @@ pub trait Typed: Sized {
     }
 }
 
-impl<T> Typed for T {}
-
 pub struct TypedWrapper<T>(T);
 
 impl<T> Deref for TypedWrapper<T> {
