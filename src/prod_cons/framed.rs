@@ -10,7 +10,7 @@ use crate::{
         bbqhdl::BbqHandle,
         coordination::Coord,
         notifier::{
-            typed::{AsyncNotifierTyped, ConstrFnMut, ConstrFut, Typed, TypedWrapper},
+            typed::{AsyncNotifierTyped, BbqSync, ConstrFnMut, ConstrFut, Typed, TypedWrapper},
             AsyncNotifier, Notifier,
         },
         storage::Storage,
@@ -88,22 +88,16 @@ impl<S: Storage, C: Coord, N: Notifier> crate::queue::ArcBBQueue<S, C, N> {
 
 pub struct FramedProducer<Q, S, C, N, H = u16>
 where
-    S: Storage,
-    C: Coord,
-    N: Notifier,
-    Q: BbqHandle<S, C, N>,
+    Self: BbqSync<Q, S, C, N>,
     H: LenHeader,
 {
-    bbq: Q::Target,
+    bbq: <Q as BbqHandle<S, C, N>>::Target,
     pd: PhantomData<(S, C, N, H)>,
 }
 
 impl<Q, S, C, N, H> FramedProducer<Q, S, C, N, H>
 where
-    S: Storage,
-    C: Coord,
-    N: Notifier,
-    Q: BbqHandle<S, C, N>,
+    Self: BbqSync<Q, S, C, N>,
     H: LenHeader,
 {
     pub fn grant(&self, sz: H) -> Result<FramedGrantW<Q, S, C, N, H>, ()> {
@@ -137,14 +131,7 @@ where
     }
 }
 
-impl<Q, S, C, N> Typed for FramedProducer<Q, S, C, N>
-where
-    S: Storage,
-    C: Coord,
-    N: Notifier,
-    Q: BbqHandle<S, C, N>,
-{
-}
+impl<Q, S, C, N> Typed for FramedProducer<Q, S, C, N> where Self: BbqSync<Q, S, C, N> {}
 
 impl<Q, S, C, N, H> TypedWrapper<FramedProducer<Q, S, C, N, H>>
 where
