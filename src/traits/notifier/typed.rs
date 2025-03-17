@@ -7,8 +7,8 @@ use crate::traits::{
 use core::{future::Future, ops::Deref};
 
 pub trait AsyncNotifierTyped: Notifier {
-    type FutNotEmpty<F, T>: Future<Output = T>;
-    type FutNotFull<F, T>: Future<Output = T>;
+    type FutNotEmpty<F: FnMut() -> Option<T>, T>: Future<Output = T>;
+    type FutNotFull<F: FnMut() -> Option<T>, T>: Future<Output = T>;
 
     fn wait_for_not_empty<T, F: FnMut() -> Option<T>>(&self, f: F) -> Self::FutNotEmpty<F, T>;
     fn wait_for_not_full<T, F: FnMut() -> Option<T>>(&self, f: F) -> Self::FutNotFull<F, T>;
