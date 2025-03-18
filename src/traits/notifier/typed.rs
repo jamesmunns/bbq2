@@ -1,9 +1,4 @@
-use crate::traits::{
-    bbqhdl::BbqHandle,
-    coordination::Coord,
-    notifier::{AsyncNotifier, Notifier},
-    storage::Storage,
-};
+use crate::traits::notifier::{AsyncNotifier, Notifier};
 use core::{future::Future, ops::Deref};
 
 pub trait AsyncNotifierTyped: Notifier {
@@ -52,37 +47,6 @@ where
     F: FnMut() -> Option<Out>,
 {
     type Out = Out;
-}
-
-#[allow(private_bounds)]
-pub trait BbqSync<Q, S, C, N>
-where
-    Self: Imply<S, Is: Storage>,
-    Self: Imply<C, Is: Coord>,
-    Self: Imply<N, Is: Notifier>,
-    Self: Imply<Q, Is: BbqHandle<S, C, N>>,
-{
-}
-
-impl<T, Q, S, C, N> BbqSync<Q, S, C, N> for T
-where
-    Self: Imply<S, Is: Storage>,
-    Self: Imply<C, Is: Coord>,
-    Self: Imply<N, Is: Notifier>,
-    Self: Imply<Q, Is: BbqHandle<S, C, N>>,
-{
-}
-
-pub(crate) trait Imply<T>: ImplyInner<T, Is = T> {}
-
-impl<S, T> Imply<T> for S {}
-
-pub(crate) trait ImplyInner<T> {
-    type Is;
-}
-
-impl<S, T> ImplyInner<T> for S {
-    type Is = T;
 }
 
 pub trait ConstrFut<'a>: AsyncNotifierTyped {
