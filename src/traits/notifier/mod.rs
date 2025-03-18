@@ -2,6 +2,7 @@
 pub mod maitake;
 
 pub mod blocking;
+pub mod typed;
 
 pub trait Notifier {
     const INIT: Self;
