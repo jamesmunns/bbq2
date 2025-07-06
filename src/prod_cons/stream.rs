@@ -46,7 +46,7 @@ pub struct StreamProducer<Q>
 where
     Q: BbqHandle,
 {
-    bbq: Q::Target,
+    pub(crate) bbq: Q::Target,
 }
 
 impl<Q> StreamProducer<Q>
@@ -110,7 +110,7 @@ pub struct StreamConsumer<Q>
 where
     Q: BbqHandle,
 {
-    bbq: Q::Target,
+    pub(crate) bbq: Q::Target,
 }
 
 impl<Q> StreamConsumer<Q>

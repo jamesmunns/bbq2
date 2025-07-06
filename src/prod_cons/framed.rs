@@ -88,8 +88,8 @@ where
     Q: BbqHandle,
     H: LenHeader,
 {
-    bbq: Q::Target,
-    pd: PhantomData<H>,
+    pub(crate) bbq: Q::Target,
+    pub(crate) pd: PhantomData<H>,
 }
 
 impl<Q, H> FramedProducer<Q, H>
@@ -131,8 +131,8 @@ where
     Q: BbqHandle,
     H: LenHeader,
 {
-    bbq: Q::Target,
-    pd: PhantomData<H>,
+    pub(crate) bbq: Q::Target,
+    pub(crate) pd: PhantomData<H>,
 }
 
 impl<Q, H> FramedConsumer<Q, H>
