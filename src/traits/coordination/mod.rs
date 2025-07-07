@@ -1,9 +1,18 @@
+//! "Coordination" functionality
+//!
+//! This trait is used to coordinate between Producers and Consumers.
+//!
+//! Unless you are on an embedded target without Compare and Swap atomics, e.g.
+//! `cortex-m0`/`thumbv6m`, you almost certainly want to use the [`cas`] version
+//! of coordination.
+
 #[cfg(feature = "cas-atomics")]
 pub mod cas;
 
 #[cfg(feature = "critical-section")]
 pub mod cs;
 
+/// Errors associated with obtaining a write grant
 #[derive(PartialEq, Debug)]
 pub enum WriteGrantError {
     /// Unable to create write grant due to not enough room in the buffer
@@ -12,6 +21,7 @@ pub enum WriteGrantError {
     GrantInProgress,
 }
 
+/// Errors associated with obtaining a read grant
 #[derive(PartialEq, Debug)]
 pub enum ReadGrantError {
     /// Unable to create write grant due to not enough room in the buffer

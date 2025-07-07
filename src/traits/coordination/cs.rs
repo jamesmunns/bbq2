@@ -1,9 +1,18 @@
+//! Mutex/Critical section based coordination
+//!
+//! This is provided so bbq2 is usable on bare metal targets that don't
+//! have CAS atomics, like `cortex-m0`/`thumbv6m` targets.
+
 use super::{Coord, ReadGrantError, WriteGrantError};
 use core::{
     cmp::min,
     sync::atomic::{AtomicBool, AtomicUsize, Ordering},
 };
 
+/// Coordination that uses a critical section to perform coordination operations
+///
+/// The critical section is only taken for a short time to obtain or release grants,
+/// not for the entire duration of the grant.
 pub struct CsCoord {
     /// Where the next byte will be written
     write: AtomicUsize,

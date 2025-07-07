@@ -5,22 +5,28 @@
 #![cfg_attr(not(any(test, feature = "std")), no_std)]
 
 /// Type aliases for different generic configurations
+///
 pub mod nicknames;
 
 /// Producer and consumer interfaces
+///
 pub mod prod_cons;
 
 /// Queue storage
+///
 pub mod queue;
 
 /// Generic traits
+///
 pub mod traits;
 
+/// Re-export of external types/traits
+///
 pub mod export {
     pub use const_init::ConstInit;
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod test {
     use core::{ops::Deref, time::Duration};
 

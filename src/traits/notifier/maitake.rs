@@ -1,7 +1,12 @@
+use const_init::ConstInit;
 use maitake_sync::WaitCell;
 
 use super::{AsyncNotifier, Notifier};
 
+/// A Maitake-Sync based SPSC notifier
+///
+/// Usable for async context. Should not be used with multiple consumers or multiple producers
+/// at the same time.
 pub struct MaiNotSpsc {
     not_empty: WaitCell,
     not_full: WaitCell,
@@ -19,13 +24,15 @@ impl Default for MaiNotSpsc {
     }
 }
 
-impl Notifier for MaiNotSpsc {
+impl ConstInit for MaiNotSpsc {
     #[allow(clippy::declare_interior_mutable_const)]
     const INIT: Self = Self {
         not_empty: WaitCell::new(),
         not_full: WaitCell::new(),
     };
+}
 
+impl Notifier for MaiNotSpsc {
     fn wake_one_consumer(&self) {
         _ = self.not_empty.wake();
     }

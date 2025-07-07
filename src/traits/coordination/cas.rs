@@ -1,9 +1,12 @@
+//! Lock-free coordination based on Compare and Swap atomics
+
 use super::{Coord, ReadGrantError, WriteGrantError};
 use core::{
     cmp::min,
     sync::atomic::{AtomicBool, AtomicUsize, Ordering},
 };
 
+/// Coordination using CAS atomics
 pub struct AtomicCoord {
     /// Where the next byte will be written
     write: AtomicUsize,
