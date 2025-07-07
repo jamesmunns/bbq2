@@ -1,4 +1,4 @@
-use super::Coord;
+use super::{Coord, ReadGrantError, WriteGrantError};
 use core::{
     cmp::min,
     sync::atomic::{AtomicBool, AtomicUsize, Ordering},
@@ -62,10 +62,9 @@ unsafe impl Coord for AtomicCoord {
         self.last.store(0, Ordering::Release);
     }
 
-    fn grant_max_remaining(&self, capacity: usize, mut sz: usize) -> Result<(usize, usize), ()> {
+    fn grant_max_remaining(&self, capacity: usize, mut sz: usize) -> Result<(usize, usize), WriteGrantError> {
         if self.write_in_progress.swap(true, Ordering::AcqRel) {
-            // return Err(Error::GrantInProgress);
-            return Err(());
+            return Err(WriteGrantError::GrantInProgress);
         }
 
         // Writer component. Must never write to `read`,
@@ -86,8 +85,7 @@ unsafe impl Coord for AtomicCoord {
             } else {
                 // Inverted, no room is available
                 self.write_in_progress.store(false, Ordering::Release);
-                // return Err(Error::InsufficientSize);
-                return Err(());
+                return Err(WriteGrantError::InsufficientSize);
             }
         } else {
             #[allow(clippy::collapsible_if)]
@@ -107,8 +105,7 @@ unsafe impl Coord for AtomicCoord {
                 } else {
                     // Not invertible, no space
                     self.write_in_progress.store(false, Ordering::Release);
-                    // return Err(Error::InsufficientSize);
-                    return Err(());
+                    return Err(WriteGrantError::InsufficientSize);
                 }
             }
         };
@@ -119,10 +116,9 @@ unsafe impl Coord for AtomicCoord {
         Ok((start, sz))
     }
 
-    fn grant_exact(&self, capacity: usize, sz: usize) -> Result<usize, ()> {
+    fn grant_exact(&self, capacity: usize, sz: usize) -> Result<usize, WriteGrantError> {
         if self.write_in_progress.swap(true, Ordering::AcqRel) {
-            // return Err(Error::GrantInProgress);
-            return Err(());
+            return Err(WriteGrantError::GrantInProgress);
         }
 
         // Writer component. Must never write to `read`,
@@ -139,8 +135,7 @@ unsafe impl Coord for AtomicCoord {
             } else {
                 // Inverted, no room is available
                 self.write_in_progress.store(false, Ordering::Release);
-                // return Err(Error::InsufficientSize);
-                return Err(());
+                return Err(WriteGrantError::InsufficientSize);
             }
         } else {
             #[allow(clippy::collapsible_if)]
@@ -159,8 +154,7 @@ unsafe impl Coord for AtomicCoord {
                 } else {
                     // Not invertible, no space
                     self.write_in_progress.store(false, Ordering::Release);
-                    // return Err(Error::InsufficientSize);
-                    return Err(());
+                    return Err(WriteGrantError::InsufficientSize);
                 }
             }
         };
@@ -171,10 +165,9 @@ unsafe impl Coord for AtomicCoord {
         Ok(start)
     }
 
-    fn read(&self) -> Result<(usize, usize), ()> {
+    fn read(&self) -> Result<(usize, usize), ReadGrantError> {
         if self.read_in_progress.swap(true, Ordering::AcqRel) {
-            // return Err(Error::GrantInProgress);
-            return Err(());
+            return Err(ReadGrantError::GrantInProgress);
         }
 
         let write = self.write.load(Ordering::Acquire);
@@ -205,8 +198,7 @@ unsafe impl Coord for AtomicCoord {
 
         if sz == 0 {
             self.read_in_progress.store(false, Ordering::Release);
-            // return Err(Error::InsufficientSize);
-            return Err(());
+            return Err(ReadGrantError::Empty);
         }
 
         Ok((read, sz))

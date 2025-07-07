@@ -5,7 +5,7 @@ use crate::{prod_cons::{framed::{FramedConsumer, FramedProducer, LenHeader}, str
 use super::{coordination::Coord, notifier::Notifier, storage::Storage};
 
 pub trait BbqHandle: Sized {
-    type Target: Deref<Target = BBQueue<Self::Storage, Self::Coord, Self::Notifier>> + Clone + Sized;
+    type Target: Deref<Target = BBQueue<Self::Storage, Self::Coord, Self::Notifier>> + Clone;
     type Storage: Storage;
     type Coord: Coord;
     type Notifier: Notifier;

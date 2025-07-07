@@ -7,7 +7,7 @@ use crate::{
     queue::BBQueue,
     traits::{
         bbqhdl::BbqHandle,
-        coordination::Coord,
+        coordination::{Coord, ReadGrantError, WriteGrantError},
         notifier::{AsyncNotifier, Notifier},
         storage::Storage,
     },
@@ -53,7 +53,7 @@ impl<Q> StreamProducer<Q>
 where
     Q: BbqHandle,
 {
-    pub fn grant_max_remaining(&self, max: usize) -> Result<StreamGrantW<Q>, ()> {
+    pub fn grant_max_remaining(&self, max: usize) -> Result<StreamGrantW<Q>, WriteGrantError> {
         let (ptr, cap) = self.bbq.sto.ptr_len();
         let (offset, len) = self.bbq.cor.grant_max_remaining(cap, max)?;
         let ptr = unsafe {
@@ -68,7 +68,7 @@ where
         })
     }
 
-    pub fn grant_exact(&self, sz: usize) -> Result<StreamGrantW<Q>, ()> {
+    pub fn grant_exact(&self, sz: usize) -> Result<StreamGrantW<Q>, WriteGrantError> {
         let (ptr, cap) = self.bbq.sto.ptr_len();
         let offset = self.bbq.cor.grant_exact(cap, sz)?;
         let ptr = unsafe {
@@ -117,7 +117,7 @@ impl<Q> StreamConsumer<Q>
 where
     Q: BbqHandle,
 {
-    pub fn read(&self) -> Result<StreamGrantR<Q>, ()> {
+    pub fn read(&self) -> Result<StreamGrantR<Q>, ReadGrantError> {
         let (ptr, _cap) = self.bbq.sto.ptr_len();
         let (offset, len) = self.bbq.cor.read()?;
         let ptr = unsafe {

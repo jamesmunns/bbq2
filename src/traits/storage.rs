@@ -1,12 +1,13 @@
+use const_init::ConstInit;
 use core::{cell::UnsafeCell, mem::MaybeUninit, ptr::NonNull};
 
 pub trait Storage {
     fn ptr_len(&self) -> (NonNull<u8>, usize);
 }
 
-pub trait ConstStorage: Storage {
-    const INIT: Self;
-}
+pub trait ConstStorage: Storage + ConstInit {}
+
+impl<T> ConstStorage for T where T: Storage + ConstInit {}
 
 #[repr(transparent)]
 pub struct Inline<const N: usize> {
@@ -43,11 +44,12 @@ impl<const N: usize> Storage for Inline<N> {
     }
 }
 
-impl<const N: usize> ConstStorage for Inline<N> {
+#[allow(clippy::declare_interior_mutable_const)]
+impl<const N: usize> ConstInit for Inline<N> {
     const INIT: Self = Self::new();
 }
 
-impl<'a, const N: usize> Storage for &'a Inline<N> {
+impl<const N: usize> Storage for &'_ Inline<N> {
     fn ptr_len(&self) -> (NonNull<u8>, usize) {
         let len = N;
 

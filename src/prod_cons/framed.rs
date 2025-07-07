@@ -8,7 +8,7 @@ use crate::{
     queue::BBQueue,
     traits::{
         bbqhdl::BbqHandle,
-        coordination::Coord,
+        coordination::{Coord, ReadGrantError, WriteGrantError},
         notifier::{AsyncNotifier, Notifier},
         storage::Storage,
     },
@@ -97,7 +97,7 @@ where
     Q: BbqHandle,
     H: LenHeader,
 {
-    pub fn grant(&self, sz: H) -> Result<FramedGrantW<Q, H>, ()> {
+    pub fn grant(&self, sz: H) -> Result<FramedGrantW<Q, H>, WriteGrantError> {
         let (ptr, cap) = self.bbq.sto.ptr_len();
         let needed = sz.into() + core::mem::size_of::<H>();
 
@@ -140,7 +140,7 @@ where
     Q: BbqHandle,
     H: LenHeader,
 {
-    pub fn read(&self) -> Result<FramedGrantR<Q, H>, ()> {
+    pub fn read(&self) -> Result<FramedGrantR<Q, H>, ReadGrantError> {
         let (ptr, _cap) = self.bbq.sto.ptr_len();
         let (offset, grant_len) = self.bbq.cor.read()?;
 
@@ -154,7 +154,7 @@ where
             // not compatible. We need to release the read grant, and
             // return an error
             self.bbq.cor.release_inner(0);
-            return Err(());
+            return Err(ReadGrantError::InconsistentFrameHeader);
         }
 
         // Ptr is the base of (HDR, Body)
@@ -167,7 +167,7 @@ where
             // something sketch. We need to release the read grant,
             // and return an error
             self.bbq.cor.release_inner(0);
-            return Err(());
+            return Err(ReadGrantError::InconsistentFrameHeader);
         }
 
         // Get the body, which is the base ptr offset by the header size
