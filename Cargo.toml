@@ -39,11 +39,11 @@ features = ["macros", "rt", "time"]
 
 [features]
 default = [
-    "cas-atomics",
     "maitake-sync-0_2",
     "critical-section",
 ]
 
+# TODO: Remove this, switched to using `#[cfg(target_has_atomic = "ptr")]`
 cas-atomics = []
 critical-section = [
     "dep:critical-section",

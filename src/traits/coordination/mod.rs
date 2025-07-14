@@ -6,7 +6,7 @@
 //! `cortex-m0`/`thumbv6m`, you almost certainly want to use the [`cas`] version
 //! of coordination.
 
-#[cfg(feature = "cas-atomics")]
+#[cfg(target_has_atomic = "ptr")]
 pub mod cas;
 
 #[cfg(feature = "critical-section")]
