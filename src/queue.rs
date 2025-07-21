@@ -1,8 +1,19 @@
 use core::marker::PhantomData;
 
-use crate::{prod_cons::{framed::{FramedConsumer, FramedProducer}, stream::{StreamConsumer, StreamProducer}}, traits::{
-    bbqhdl::BbqHandle, coordination::Coord, notifier::Notifier, storage::{ConstStorage, Storage}
-}};
+use crate::{
+    prod_cons::{
+        framed::{FramedConsumer, FramedProducer},
+        stream::{StreamConsumer, StreamProducer},
+    },
+    traits::{
+        coordination::Coord,
+        notifier::Notifier,
+        storage::{ConstStorage, Storage},
+    },
+};
+
+#[cfg(feature = "std")]
+use crate::traits::bbqhdl::BbqHandle;
 
 /// A standard bbqueue
 pub struct BBQueue<S, C, N> {
@@ -43,32 +54,27 @@ impl<S: ConstStorage, C: Coord, N: Notifier> BBQueue<S, C, N> {
     }
 }
 
-
 impl<S: Storage, C: Coord, N: Notifier> BBQueue<S, C, N> {
-    pub fn framed_producer(&self) -> FramedProducer<&'_ Self> {
+    pub const fn framed_producer(&self) -> FramedProducer<&'_ Self> {
         FramedProducer {
-            bbq: self.bbq_ref(),
+            bbq: self,
             pd: PhantomData,
         }
     }
 
-    pub fn framed_consumer(&self) -> FramedConsumer<&'_ Self> {
+    pub const fn framed_consumer(&self) -> FramedConsumer<&'_ Self> {
         FramedConsumer {
-            bbq: self.bbq_ref(),
+            bbq: self,
             pd: PhantomData,
         }
     }
 
-    pub fn stream_producer(&self) -> StreamProducer<&'_ Self> {
-        StreamProducer {
-            bbq: self.bbq_ref(),
-        }
+    pub const fn stream_producer(&self) -> StreamProducer<&'_ Self> {
+        StreamProducer { bbq: self }
     }
 
-    pub fn stream_consumer(&self) -> StreamConsumer<&'_ Self> {
-        StreamConsumer {
-            bbq: self.bbq_ref(),
-        }
+    pub const fn stream_consumer(&self) -> StreamConsumer<&'_ Self> {
+        StreamConsumer { bbq: self }
     }
 }
 
