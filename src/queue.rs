@@ -106,3 +106,31 @@ impl<S: Storage, C: Coord, N: Notifier> crate::queue::ArcBBQueue<S, C, N> {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::traits::{
+        coordination::cas::AtomicCoord, notifier::blocking::Blocking, storage::Inline,
+    };
+
+    use super::*;
+
+    type Queue = BBQueue<Inline<4096>, AtomicCoord, Blocking>;
+    static QUEUE: Queue = BBQueue::new();
+    static PRODUCER: FramedProducer<&'static Queue, u16> = QUEUE.framed_producer();
+    static CONSUMER: FramedConsumer<&'static Queue, u16> = QUEUE.framed_consumer();
+
+    #[test]
+    fn handles() {
+        let mut wgr = PRODUCER.grant(16).unwrap();
+        wgr.iter_mut().for_each(|w| *w = 123);
+        wgr.commit(16);
+
+        let rgr = CONSUMER.read().unwrap();
+        assert_eq!(rgr.len(), 16);
+        for b in rgr.iter() {
+            assert_eq!(*b, 123);
+        }
+        rgr.release();
+    }
+}
