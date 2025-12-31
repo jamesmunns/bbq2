@@ -50,6 +50,9 @@ disable-cache-padding = [
     "maitake-sync?/no-cache-pad",
 ]
 alloc = []
+std = [
+    "alloc"
+]
 maitake-sync-0_2 = [
     "dep:maitake-sync",
 ]

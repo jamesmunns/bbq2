@@ -29,7 +29,7 @@ pub mod export {
     pub use const_init::ConstInit;
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "alloc"))]
 mod test {
     use core::{ops::Deref, time::Duration};
 
