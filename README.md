@@ -1,7 +1,5 @@
 # bbq2
 
-Now with sixteen great flavors!
+This was an experimental repo, and has been upstreamed to <https://github.com/jamesmunns/bbqueue>, in [this PR](https://github.com/jamesmunns/bbqueue/pull/110).
 
-This is an attempt to re-implement [bbqueue](https://github.com/jamesmunns/bbqueue).
-
-No docs yet. Check out the unit tests in [`lib.rs`](./src/lib.rs) for usage :)
+[This Tag](https://github.com/jamesmunns/bbq2/tree/bbq2-export) was the final commit that was imported.
